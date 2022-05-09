@@ -928,7 +928,51 @@ def create_detailed_mismatch_report_html(page_title, file_path, delimiter):
     </script>
 </head>
 <body>"""
+    with codecs.open(file_path, 'rb', encoding='utf-8') as fin, codecs.open(output_file_path, 'wb',
+                                                                            encoding='utf-8') as fout:
+        fout.write(_html)
+        fout.write('\n<br>\n<h2 align="center">{}</h2>\n<br>'.format(page_title))
+        fout.write('\n\t<div class=\"container-fluid\">')
+        fout.write(
+            "\n\t<table ud=\"example\" class=\"display table table-striped table-bordered\" style\"width:100%\">")
+        thead = 0
+        tbody = 0
+        tr = 0
+        for line_count, row in enumerate(fin, start=1):
+            if line_count >= 10000:
+                partial_flag = True
+                message ="""Showing first 10,000 records in the html report. 
+For full details, pelase refer {}""".format(file_path)
+                logger.info(message)
+                break
+            for col_count, item in enumerate(row.split(delimiter), start=1):
+                if line_count == 1:
+                    if thead == 0:
+                        fout.write("\n\t<thead>")
+                        thead += 1
+                    if tr == 0:
+                        fout.write("\n\t\t<tr>")
+                        tr += 1
+                    fout.write(r"{}{}{}".format("\n\t\t\t<th class=\"bg-success\">", item.strip(), "</th>"))
+                else:
+                    if tbody == 0:
+                        fout.write("\n\t<tbody")
+                        tbody += 1
+                    if tr == 0:
+                        fout.write("\n\t\t<tr>")
+                        tr += 1
+                    fout.write(r"{}{}{}".format("\n\t\t\t<td>", item, "</td>"))
+            if tr > 0:
+                fout.write("\n\t\t</tr>")
+                tr -= 1
 
+            if line_count == 1 and thead == 1:
+                fout.write("\n\t</thead>")
+        fout.write("""\n\t</tbody>\n\t</table>\n</div>""")
+        if partial_flag:
+            fout.write("""\n<br><br><p>Note: {}</p>""".format(message))
+        fout.write("""\n</body></html>""")
+    return output_file_path
 
 @timer
 def insert_comparison_summary_into_oracle(record):
