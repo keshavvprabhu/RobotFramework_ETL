@@ -13,6 +13,7 @@ from sqlite3 import Error
 import numpy as np
 import pandas as pd
 from robot.api import logger
+import cx_Oracle
 
 # Author Section
 # Program Name: FileCompare.py
