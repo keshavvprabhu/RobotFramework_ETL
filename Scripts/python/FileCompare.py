@@ -15,9 +15,11 @@ import pandas as pd
 from robot.api import logger
 import cx_Oracle
 
+
 # Author Section
 # Program Name: FileCompare.py
 # Created by Keshav at 08/05/22 8:53 p.m.                       
+
 
 def timer(fn):
     """
@@ -92,8 +94,8 @@ def prepare_files(dict_configuration, switch):
     list_comparable_indices = []
     list_header = []
 
-    with codecs.open(file_path,'rb', encoding='utf-8') as fin, codecs.open(temp_file_path, 'wb',
-                                                                           encoding='utf-8') as fout:
+    with codecs.open(file_path, 'rb', encoding='utf-8') as fin, \
+            codecs.open(temp_file_path, 'wb', encoding='utf-8') as fout:
         csvreader = csv.reader(fin, delimter=file_delimiter)
         r = 1
 
@@ -137,7 +139,7 @@ def prepare_files(dict_configuration, switch):
                                                                     column_value)
                         else:
                             temp_record = "{1}{0}{2}{0}{3}".format(result_delimiter, str_file_keys, column_name,
-                                                                    column_value)
+                                                                   column_value)
 
                         fout.write("{}{}".format(temp_record, "\n"))
                     except Exception as e:
@@ -235,7 +237,7 @@ def verify_imp_columns(file_path, file_delimiter, imp_columns):
         logger.error("ERROR: '{}': key_columns could not be found in the file_header")
         logger.error("file_header = {}".format(sorted(set_file_header)))
         logger.error("file_column = {}".format(sorted(set_imp_columns)))
-        diff_col  = set_imp_columns - set_file_header
+        diff_col = set_imp_columns - set_file_header
         logger.error("Difference observed: {}".format(list(diff_col)))
         raise RuntimeError("ERROR: '{}': key_columns could not be found in the file_header")
 
@@ -330,7 +332,7 @@ def create_stats_report(dict_configuration, config_file_path):
 
     list_header = ('TestEnvironment', 'TestName', 'SourceFileName', 'TargetFileName',
                    'DetailedResultFileName', 'SourceRecordCount', 'TargetRecordCount',
-                   'MismatchedRecordCount','MissingInSourceRecordCount', 'MissingInTargetRecordCount',
+                   'MismatchedRecordCount', 'MissingInSourceRecordCount', 'MissingInTargetRecordCount',
                    'PassPercent', 'TestResult', 'InsertedTimeStamp', 'RunDate', 'MachineName',
                    'UserName')
     header = result_delimiter.join(list_header).upper()
@@ -406,9 +408,9 @@ def create_stats_report(dict_configuration, config_file_path):
             else:
                 test_result = 'FAIL'
 
-            obj_dateTime = datetime.now()
-            str_timestamp = obj_dateTime.strftime("%Y-%m-%d %h:%M:%S.%f")
-            record.append(dict_configuration.get('test_environment',''))
+            obj_date_time = datetime.now()
+            str_timestamp = obj_date_time.strftime("%Y-%m-%d %h:%M:%S.%f")
+            record.append(dict_configuration.get('test_environment', ''))
             record.append(dict_configuration.get('test_name', ''))
             record.append(os.path.basename(source_file_path))
             record.append(os.path.basename(target_file_path))
@@ -421,7 +423,7 @@ def create_stats_report(dict_configuration, config_file_path):
             record.append("{}%".format(str(pass_percentage)))
             record.append(str(test_result))
             record.append(str_timestamp)
-            run_date = obj_dateTime.strftime("%Y-%m-%d")
+            run_date = obj_date_time.strftime("%Y-%m-%d")
             record.append(run_date)
             computer_name = str(os.environ.get('COMPUTERNAME', 'UNKNOWN').upper())
             record.append(computer_name)
@@ -515,6 +517,7 @@ def prepare_dict_config(config_file_path):
     dict_config['target_file_columns'] = dict_config['target_file_columns'].split(target_file_delimiter)
     return dict_config
 
+
 @timer
 def create_sqlite_database(database_file_path):
     """
@@ -532,11 +535,12 @@ def create_sqlite_database(database_file_path):
     database_file_path = os.path.abspath(database_file_path)
     if not os.path.exists(database_file_path):
         try:
-            with sqlite3.connect(database_file_path) as conn:
+            with sqlite3.connect(database_file_path):
                 logger.info("Database {} created".format(database_file_path))
         except Error as e:
             logger.error("Error while creating SQLite Database: {}".format(database_file_path))
             raise RuntimeError("ERROR: {}".format(e))
+
 
 @timer
 def compare_files(config_file_path):
@@ -553,7 +557,7 @@ def compare_files(config_file_path):
 
     config_file_path = os.path.abspath(config_file_path)
     dict_configurations = prepare_dict_config(config_file_path)
-    for i in ['source','target']:
+    for i in ['source', 'target']:
         verify_configuration(dict_configurations, i)
     compare_file_headers(dict_configurations)
     source_temp_file = prepare_files(dict_configurations, 'source')
@@ -605,7 +609,7 @@ def create_comparison_query(source_file_path, target_file_path, source_delimiter
     source_header = get_file_header(source_file_path, source_delimiter)
     target_header = get_file_header(target_file_path, target_delimiter)
 
-    ## Safety Checks
+    # Safety Checks
     if len(source_header) != len(target_header):
         logger.error("ERROR: Source and target have different number of columns")
         logger.error("Source Header: {}".format(source_delimiter.join(source_header)))
@@ -618,7 +622,7 @@ def create_comparison_query(source_file_path, target_file_path, source_delimiter
         zip_header = zip(updated_source_header, updated_target_header)
     else:
         zip_header = list(zip(updated_source_header, updated_target_header))
-    query_join_cond = "\n and ".join(["{} = {}".format(g[0],g[1]) for g in zip_header[:-1]])
+    query_join_cond = "\n and ".join(["{} = {}".format(g[0], g[1]) for g in zip_header[:-1]])
     query_part1_attr = ", ".join(["s.{0} as {0}".format(s) for s in source_header[:-1]])
     query_part2_attr = ", ".join(["t.{0} as {0}".format(t) for t in target_header[:-1]])
     comparison_query = """select {0}, s.source_value as source_value, coalesce(t.target_value, '~~Missing~~') as target_value,
@@ -737,12 +741,10 @@ def query_sqlite_database(database_file_path, select_stmt, output_file_path, del
                 fout.write("{}{}".format(header, '\n'))
             for row in cursor:
                 try:
-                    columns =  [column for column in row]
+                    columns = [column for column in row]
                     fout.write("{}{}".format(delimiter.join(columns), '\n'))
                 except UnicodeEncodeError:
                     logger.error("Unicode Encod Error - Skipping this record {}".format(row))
-
-
 
 
 @timer
@@ -790,8 +792,8 @@ def generate_create_index_command(table_name, index_name, list_key_columns):
     """
     key_columns = ", ".join(list_key_columns)
     key_columns = "{}, column_name".format(key_columns)
-    craete_index_stmt = "create unique index if not exists {} on {1} ({2});".format(index_name, table_name,
-                                                                                   key_columns)
+    craete_index_stmt = "create unique index if not exists {0} on {1} ({2});".format(index_name, table_name,
+                                                                                     key_columns)
     return craete_index_stmt
 
 
@@ -806,7 +808,7 @@ def generate_create_table_command(table_name, list_header_columns):
     Returns:
 
     """
-    list_attributes_def = ["{} text".format(col.replace(' ','_').strip()) for col in list_header_columns]
+    list_attributes_def = ["{} text".format(col.replace(' ', '_').strip()) for col in list_header_columns]
     table_attributes = "\n, ".join(list_attributes_def)
     create_table_stmt = """create table if not exists {} (\n{}\n);""".format(table_name, table_attributes)
     logger.info(create_table_stmt)
@@ -828,7 +830,7 @@ def load_delimited_file_into_sqlite(dict_configuration, table_name, input_file_p
     """
     table_name = table_name.strip()
     if ' ' in table_name:
-        table_name = table_name.replace(' ','_').strip()
+        table_name = table_name.replace(' ', '_').strip()
 
     index_name = "idx_{}".format(table_name)
     database_file_path = dict_configuration['database_file_path']
@@ -844,6 +846,7 @@ def load_delimited_file_into_sqlite(dict_configuration, table_name, input_file_p
     bulk_load_file_into_table(database_file_path, table_name, input_file_path, delimiter)
     list_key_columns = dict_configuration['key_columns']
     create_index_stmt = generate_create_index_command(table_name, index_name, list_key_columns)
+    execute_sql_stmt_on_sqlite_database(database_file_path, create_index_stmt)
 
 
 @timer
@@ -855,7 +858,7 @@ def drop_index_and_table(dict_configuration, table_name):
     """
     table_name = table_name.strip()
     if ' ' in table_name:
-        table_name = table_name.replace(' ','_').strip()
+        table_name = table_name.replace(' ', '_').strip()
     index_name = "idx_{}".format(table_name)
     database_file_path = dict_configuration['database_file_path']
     database_file_path = os.path.abspath(database_file_path)
@@ -884,13 +887,13 @@ def create_detailed_mismatch_report_html(page_title, file_path, delimiter):
     output_file_path = os.path.join(folder_path, "{}.html".format(output[0]))
     if os.path.exists(output_file_path):
         os.remove(output_file_path)
-    partial_flag=False
+    partial_flag = False
     message = ''
     _html = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset= "UTF-8">
-    <title>""" +str(page_title) + """</title> 
+    <title>""" + str(page_title) + """</title> 
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.3.min.js"></script>
@@ -941,7 +944,7 @@ def create_detailed_mismatch_report_html(page_title, file_path, delimiter):
         for line_count, row in enumerate(fin, start=1):
             if line_count >= 10000:
                 partial_flag = True
-                message ="""Showing first 10,000 records in the html report. 
+                message = """Showing first 10,000 records in the html report. 
 For full details, pelase refer {}""".format(file_path)
                 logger.info(message)
                 break
@@ -974,10 +977,119 @@ For full details, pelase refer {}""".format(file_path)
         fout.write("""\n</body></html>""")
     return output_file_path
 
+
+@timer
+def get_attribute_mismatch_stats(input_file_path, delimiter):
+    """
+    This function contains the logic that helps us to report how many times an attribute has value mismatches 
+    during the comparison process
+    Args:
+        input_file_path:
+        delimiter:
+        
+    Returns:
+        
+    """
+    input_file_path = os.path.abspath(input_file_path)
+    input_folder_path = os.path.dirname(input_file_path)
+    input_file_name_ext = os.path.basename(input_file_path)
+    output_file_name_ext = "MismatchStats_{}".format(input_file_name_ext)
+    output_file_path = os.path.join(input_folder_path, output_file_name_ext)
+    delimiter = str(delimiter)
+    dfs = pd.read_csv(input_file_path, sep=delimiter, na_filter=False, chunksize=1000000)
+    temp_df = pd.DataFrame()
+
+    for i, df in enumerate(dfs):
+        try:
+            df = df[df['mismatch_category'] == "Value_Mismatch"]
+            out_df = df[['column_name, mismatch_category']]
+            df2 = out_df.pivot_table(index='column_name', values='mismatch_category', aggfunc=np.count_nonzero)
+            temp_df = temp_df.append(df2)
+        except KeyError:
+            logger.error("No Value Mismatches")
+
+    try:
+        final_df = temp_df.pivot_table(index='column_name', values='mismatch_category', aggfunc=np.sum)
+        final_df = final_df.reset_index()
+        final_df.columns = ['Mismatching_Column_Name', 'Mismatch_Count']
+        logger.info("\n Msmatching Attribute Count".center(50, '-'))
+        final_df.index = no.arange(1, len(final_df) + 1)
+        logger.info(final_df.to_string(index=False, header=False))
+        logger.info("\n {}".format("-" * 50))
+        final_df.to_csv(output_file_path, sep=delimiter, index=False, header=True)
+        create_detailed_mismatch_report_html('Mismatching Attribute Count', output_file_path, delimiter)
+    except KeyError:
+        logger.error("No value mismatches")
+
+
+@timer
+def query_sqlite_pragma_table_info(database_file_path, entity_table_name):
+    """
+    Gets the column names from the SQLite Table
+    Args:
+        database_file_path:
+        entity_table_name:
+    
+    Returns:
+        
+    """
+    database_file_path = os.path.abspath(database_file_path)
+    list_column_names = list()
+    # This method works only with Python3. Hence I commented it out 
+    # if sys.version_info.major == 3:
+    #     with sqlite3.connect(database_file_path) as conn:
+    #         conn.text_factory = str 
+    #         cursor = conn.cursor()
+    #         sql = "select name from pragma_table_info('{}') order by cid".format(entity_table_name)
+    #         cursor.execute(sql)
+    #         list_column_names = list()
+    #         for row in cursor:
+    #             try:
+    #                 for column in row:
+    #                     list_column_names.append(column)
+    #             except UnicodeEncodeError:
+    #                 logger.error("UnicodeEncodeError : Skipping this record: {}".format(row))
+    #         print(list_column_names)
+    #         return list_collumn_names
+
+    # This method works with all Python versions. Keeping this change.
+    with sqlite3.connect(database_file_path) as conn:
+        conn.text_factory = str
+        cursor = conn.cursor()
+        sql = "select * from {} limit 5;", format(entity_table_name)
+        cursor.execute(sql)
+        list_column_names = [description[0] for description in cursor.description]
+        return list_column_names
+
+
+@timer
+def merge_mismatch_stats():
+    """
+    Merges alll the Mid-Level Mismatch Stats reports into a Single File for a consolidated view
+    Returns:
+        
+    """
+    delimiter = '|'
+    folder_path = r'C:\workspace\RobotFramework_ETL\Results\FileCompare'
+    file_name_pattern = "MismatchStats_ComparisonResult_*.psv"
+    output_file_name = "Consolidated_MismatchStats_Report.psv"
+    output_file_path = os.path.join(folder_path, output_file_name)
+    list_files = glob.glob("{}/{}".format(folder_path, file_name_pattern))
+    print(list_files)
+    merged_df = pd.DataFrame()
+    for file in list_files:
+        df = pd.read_csv(file, sep=delimiter)
+        file_name = os.path.basename(file)
+        df['File_Name'] = file_name
+        df = df[['File_Name', 'MismatchingColumn_Name', 'Mismatch_Count']]
+        merged_df = merged_df.append(df)
+    merged_df.to_csv(output_file_path, sel=delimiter, index=False)
+
+
 @timer
 def insert_comparison_summary_into_oracle(record):
     """
-    This is an optin al function that can be activated in the configuration file. If the flag value is set to truen then
+    This is an optional function that can be activated in the configuration file. If the flag value is set to truen then
     Args:
         record:
 
@@ -1006,6 +1118,7 @@ def insert_comparison_summary_into_oracle(record):
 
     # et = timeit.default_timer() - st
     # logger.info("Finished : {}; Elapsed Time: {}".format(my_name, et))
+
 
 if __name__ == '__main__':
     pass
