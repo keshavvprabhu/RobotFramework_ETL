@@ -18,7 +18,7 @@ import cx_Oracle
 
 # Author Section
 # Program Name: FileCompare.py
-# Created by Keshav at 08/05/22 8:53 p.m.                       
+# Created by Keshav Prabhu at 08/05/2018 8:53 p.m.
 
 
 def timer(fn):
