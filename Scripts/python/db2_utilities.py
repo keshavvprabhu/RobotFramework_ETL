@@ -15,7 +15,8 @@ import timeit
 
 
 # Write your code here
-def query_zos_db2_database(hostname, port, database, user_name, password, sql_stmt, output_file_path, delimiter="|", header_flag=True):
+def query_zos_db2_database(hostname, port, database, user_name, password, sql_stmt, output_file_path,
+                           delimiter="|", header_flag=True):
     """
     Function to connect to DB2 Database on a zOS mainframe
     Args:
@@ -52,8 +53,8 @@ def query_zos_db2_database(hostname, port, database, user_name, password, sql_st
 
         with codecs.open(output_file_path, 'wb', encoding='utf-8') as fout:
             csvwriter = csv.writer(fout, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL)
-            if header_flag is True or header_flag=='True':
-                if sys.version_info.major ==2:
+            if header_flag is True or header_flag == 'True':
+                if sys.version_info.major == 2:
                     column_names = [item[0].endode('utf-8') for item in cursor.description]
                     logger.info(column_names)
                 else:
