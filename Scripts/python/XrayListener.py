@@ -1,5 +1,5 @@
 # import section
-from robot.libraries.BuiltIn import  BuiltIn
+from robot.libraries.BuiltIn import BuiltIn
 import os
 import codecs
 import logging
@@ -8,7 +8,7 @@ import requests.packages.urllib3
 import datetime
 from configparser import ConfigParser, ExtendedInterpolation
 requests.packages.urllib3.disable_warnings()
-
+# global logger
 # Author Section
 # Program Name: XrayListener.py                                     
 # Created by Keshav at 20/05/22 11:05 p.m.                       
@@ -179,6 +179,7 @@ class XRayListener:
             self.files = {'file': ('output.xml', self.content)}
 
         except Exception as e:
+            logger.error("Error : {}".format(e))
             logger.error("XRAY_HOST, XRAY_AUTH_KEY, PROJECT_KEY, TEST_PLAN_KEY need to be provided")
             raise SystemExit("Mandatory Values are not provided to the XrayListener. Check log file for error")
 
@@ -310,7 +311,7 @@ class XRayListener:
 
                 except Exception as e:
                     logger.error("Error while attaching report.html")
-                    logger.error("{} - {} -  {}".format(item, self.response.status_code, self.response.content))
+                    logger.error("{} - {} -  {}".format(self.jira_attachments_endpoint, self.response.status_code, self.response.content))
 
                 logger.info("Attaching log.html to Test Execution JIRA")
                 try:
@@ -324,7 +325,7 @@ class XRayListener:
                         logger.error("Failed to attach RobotFramework log.html to Test Execution JIRA")
                 except Exception as e:
                     logger.error("Error while attaching log.html")
-                    logger.error("{} - {} -  {}".format(item, self.response.status_code, self.response.content))
+                    logger.error("{} - {} -  {}".format(self.jira_attachments_endpoint, self.response.status_code, self.response.content))
 
                 # Transitioning the Test Execution JIRA to DONE
                 self.data = {'transition': {'id': '11'}}
@@ -336,12 +337,14 @@ class XRayListener:
                                                   )
                 except Exception as e:
                     logger.error("Error while transitioning Test Execution JIRA")
-                    logger.error("{} - {} -  {}".format(item, self.response.status_code, self.response.content))
+                    logger.error("{} - {} -  {}".format("{}/transitions".format(self.test_execution_endpoint),
+                                                                                self.response.status_code,
+                                                        self.response.content))
 
                 # Changing Custom fields for the Test Execution JIRA
                 self.data = {'fields': { 'customfield_10228': {'id': '11401'},
                                          'fixVersions': [{'name': self.fix_version}],
-                                         'components':[{'name':self.component}],
+                                         'components': [{'name': self.component}],
                                          }
                              }
                 try:
@@ -349,15 +352,18 @@ class XRayListener:
                                                  headers=self.api_header,
                                                  json=self.data,
                                                  verify=False)
-                    if self.response.code not in (200, 204):
+                    if self.response.status_code not in (200, 204):
                         logger.error("Error while updating customfields of Test Execution JIRA")
                     else:
                         logger.info("Custom Fields updated successfully for the TestExecution JIRA")
                 except Exception as e:
+                    logger.error("Error: {}".format(e))
                     logger.error("Error while updating Custom Fields of Test Execution JIRA")
-                    logger.error("{} - {} -  {}".format(item, self.response.status_code, self.response.content))
+                    logger.error("{} - {} -  {}".format(self.test_execution_endpoint,
+                                                        self.response.status_code,
+                                                        self.response.content))
 
-                #Adding a comment to the Test Execution JIRA
+                # Adding a comment to the Test Execution JIRA
 
                 self.comment_message = "Changed Automated='Yes' and attached RobotFramework log.html and report.html." \
                                        "Changed the Status to DONE and aldo some additional custom fields " \
@@ -374,15 +380,19 @@ class XRayListener:
                     else:
                         logger.info("Comment added to the Test Execution JIRA")
                 except Exception as e:
-                    logger.error("Error while adding Comment to Test Execution JIRA")
-                    logger.error("{} - {} -  {}".format(item, self.response.status_code, self.response.content))
+                    logger.error("Error while adding Comment to Test Execution JIRA. Error: {}".format(e))
+                    logger.error("{} - {} -  {}".format("{}/comment".format(self.test_execution_endpoint),
+                                                        self.response.status_code, self.response.content))
 
             else:
                 logger.error("RobotFramework Test Execution Import Failed")
 
         except Exception as e:
+            logger.error("Error: {}".format(e))
             logger.error("Something went wrong while importing RobotFramework Test Import into Xray")
-            logger.info("{} - {} - {}".format(self.xray_api_endpoint, self.response.status_code, self.response.content))
+            logger.info("{} - {} - {}".format(self.xray_api_endpoint,
+                                              self.response.status_code,
+                                              self.response.content))
 
 
 if __name__ == '__main__':

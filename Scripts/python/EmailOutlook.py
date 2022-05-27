@@ -89,5 +89,14 @@ def read_html_file_content(html_file_path):
         return fin.read()
 
 
+def test_email():
+    str_to = 'keshavvprabhu@gmail.com'
+    str_cc = "keshavvprabhu@gmail.com"
+    str_subject = "Test Email"
+    str_body = "Hello, This is a test email"
+    list_attachments = ''
+    send_email(str_to, str_cc, str_subject, str_body, list_attachments)
+
 if __name__ == '__main__':
+    test_email()
     pass

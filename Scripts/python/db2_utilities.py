@@ -65,7 +65,7 @@ def query_zos_db2_database(hostname, port, database, user_name, password, sql_st
             for row in cursor.fetchall():
                 try:
                     if sys.version_info.major == 2:
-                        columns = [uncode(column or '') for column in row]
+                        columns = [unicode(column or '') for column in row]
                     else:
                         columns = [str(column or '') for column in row]
 
@@ -125,7 +125,7 @@ def query_as400_db2_database(hostname, port, database, user_name, password, sql_
             for row in cursor.fetchall():
                 try:
                     if sys.version_info.major == 2:
-                        columns = [uncode(column or '') for column in row]
+                        columns = [unicode(column or '') for column in row]
                     else:
                         columns = [str(column or '') for column in row]
 
