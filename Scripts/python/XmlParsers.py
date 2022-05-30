@@ -61,7 +61,7 @@ def parse_ms_datawarehouse_xml_file(input_file_path, delimiter):
     with codecs.open(output_file_path, 'w', encoding='utf-8') as fout:
         list_header = ['xml_record_id', 'investment_vehicle_id', 'xpath', 'value']
         str_header = delimiter.join(list_header)
-        fout.write(u"{}\n".format(list_header))
+        fout.write(u"{}\n".format(str_header))
         xml_id = 0
         for event, elem in xml_iter:
             if event == 'start':
@@ -235,7 +235,7 @@ def parse_fspx_xml(input_file_path, delimiter='|'):
 
     xml_iter = etree.iterparse(input_file_path, events=('start', 'end'))
     list_tag = list()
-    key = None
+    # key = None
 
     with codecs.open(output_file_path, 'wb', encoding='utf-8') as fout:
         list_header = ['xml_record_id', 'xpath', 'value']
@@ -243,7 +243,7 @@ def parse_fspx_xml(input_file_path, delimiter='|'):
         fout.write(u"{}\n".format(str_header))
         xml_id = 0
         xmlns = '{fsrv}'
-        output_record = list()
+        # output_record = list()
         for event, elem in xml_iter:
             if event == 'start':
                 print(elem.tag, elem.attrib, elem.text)
