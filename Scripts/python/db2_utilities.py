@@ -15,6 +15,29 @@ import timeit
 
 
 # Write your code here
+def timer(fn):
+    """
+    This is the timer decorator that can provide the elapsed time of each function passed as argument
+    Args:
+        fn:
+
+    Returns:
+
+    """
+
+    def inner(*args, **kwargs):
+        start_time = timeit.default_timer()
+        logger.info("Started: {}".format(fn.__name__))
+        to_execute = fn(*args, **kwargs)
+        end_time = timeit.default_timer()
+        execution_time = end_time - start_time
+        logger.info("Completed: {}".format(fn.__name__))
+        logger.info("{0} took {1}s to execute".format(fn.__name__, execution_time))
+        return to_execute
+
+    return inner
+
+@timer
 def query_zos_db2_database(hostname, port, database, user_name, password, sql_stmt, output_file_path,
                            delimiter="|", header_flag=True):
     """
@@ -74,7 +97,7 @@ def query_zos_db2_database(hostname, port, database, user_name, password, sql_st
                 except UnicodeEncodeError:
                     logger.error("UnicodeEncodeError: Skipping the record : {}".format(row))
 
-
+@timer
 def query_as400_db2_database(hostname, port, database, user_name, password, sql_stmt, output_file_path, delimiter="|",
                            header_flag=True):
     """
