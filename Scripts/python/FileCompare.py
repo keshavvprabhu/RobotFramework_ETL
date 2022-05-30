@@ -3,7 +3,7 @@ import codecs
 import csv
 import gc
 import glob
-import logging
+# import logging
 import os
 import sqlite3
 import sys
@@ -13,7 +13,7 @@ from sqlite3 import Error
 import numpy as np
 import pandas as pd
 from robot.api import logger
-import cx_Oracle
+# import cx_Oracle
 
 
 # Author Section
@@ -581,12 +581,11 @@ def compare_files(config_file_path):
     header_flag = True
     query_sqlite_database(database_file_path, select_stmt, result_file_path, result_delimiter, header_flag)
 
-    returned_test_result = create_status_report(dict_configurations, config_file_path)
+    returned_test_result = create_stats_report(dict_configurations, config_file_path)
     os.remove(source_temp_file)
     os.remove(target_temp_file)
     gc.collect()
     return returned_test_result
-
 
 @timer
 def create_comparison_query(source_file_path, target_file_path, source_delimiter, target_delimiter, source_table,
@@ -1013,7 +1012,7 @@ def get_attribute_mismatch_stats(input_file_path, delimiter):
         final_df = final_df.reset_index()
         final_df.columns = ['Mismatching_Column_Name', 'Mismatch_Count']
         logger.info("\n Msmatching Attribute Count".center(50, '-'))
-        final_df.index = no.arange(1, len(final_df) + 1)
+        final_df.index = np.arange(1, len(final_df) + 1)
         logger.info(final_df.to_string(index=False, header=False))
         logger.info("\n {}".format("-" * 50))
         final_df.to_csv(output_file_path, sep=delimiter, index=False, header=True)
@@ -1083,41 +1082,41 @@ def merge_mismatch_stats():
         df['File_Name'] = file_name
         df = df[['File_Name', 'MismatchingColumn_Name', 'Mismatch_Count']]
         merged_df = merged_df.append(df)
-    merged_df.to_csv(output_file_path, sel=delimiter, index=False)
+    merged_df.to_csv(output_file_path, sep=delimiter, index=False)
 
 
-@timer
-def insert_comparison_summary_into_oracle(record):
-    """
-    This is an optional function that can be activated in the configuration file. If the flag value is set to truen then
-    Args:
-        record:
-
-    Returns:
-
-    """
-    # my_name = "insert_comparison_summary_into_oracle()"
-    # logger.info("Entered: {}".format(my_name))
-    # st = timeit.default_timer()
-    db_host = ''
-    db_port = ''
-    db_name = ''
-    db_user = ''
-    db_password = ''
-    db_role = cx_Oracle.SYSDBA
-    sql_stmt = """
-    insert into {}.{} values 
-    {}
-    """.format(schema_name, table_name, str(tuple(record)))
-    logger.info(sql_stmt)
-    with cx_Oracle.connect(db_user, db_password, "{}:{}/{}".format(db_host, db_port, db_name), db_role,
-                           encoding='utf-8') as conn:
-        cursor = conn.cursor()
-        cursor.execute(sql_stmt)
-        conn.commit()
-
-    # et = timeit.default_timer() - st
-    # logger.info("Finished : {}; Elapsed Time: {}".format(my_name, et))
+# @timer
+# def insert_comparison_summary_into_oracle(record):
+#     """
+#     This is an optional function that can be activated in the configuration file. If the flag value is set to truen then
+#     Args:
+#         record:
+#
+#     Returns:
+#
+#     """
+#     # my_name = "insert_comparison_summary_into_oracle()"
+#     # logger.info("Entered: {}".format(my_name))
+#     # st = timeit.default_timer()
+#     db_host = ''
+#     db_port = ''
+#     db_name = ''
+#     db_user = ''
+#     db_password = ''
+#     db_role = cx_Oracle.SYSDBA
+#     sql_stmt = """
+#     insert into {}.{} values
+#     {}
+#     """.format(schema_name, table_name, str(tuple(record)))
+#     logger.info(sql_stmt)
+#     with cx_Oracle.connect(db_user, db_password, "{}:{}/{}".format(db_host, db_port, db_name), db_role,
+#                            encoding='utf-8') as conn:
+#         cursor = conn.cursor()
+#         cursor.execute(sql_stmt)
+#         conn.commit()
+#
+#     # et = timeit.default_timer() - st
+#     # logger.info("Finished : {}; Elapsed Time: {}".format(my_name, et))
 
 
 if __name__ == '__main__':

@@ -1,15 +1,16 @@
 # import section
+import codecs
 import csv
+import filecmp
+import glob
 import os
+import re
+import shutil
 import timeit
 import zipfile
 
-from robot.api import logger
 import pandas as pd
-import numpy as np
-import codecs
-import csv
-from collections import Counter
+from robot.api import logger
 
 
 # Author Section
@@ -125,6 +126,7 @@ def convert_file_delimiters(input_file_path, from_delimiter, to_delimiter):
     logger.info("Delimiter converted from {} to {} for input file : {}".format(from_delimiter, to_delimiter,
                                                                                input_file_path))
 
+
 @timer
 def detect_encoding(input_file_path):
     """
@@ -142,8 +144,10 @@ def detect_encoding(input_file_path):
     with codecs.open(input_file_path, 'rb', encoding='utf-8') as fin:
         for record in fin:
             list_encoding = chardet.detect(record)
+    return list_encoding
 
 
+@timer
 def parse_autosys_jil_extract(environment_name, input_file_path, delimiter="|"):
     """
     Parses Autosys JIL file and generates and output file (delimited)
@@ -160,8 +164,8 @@ def parse_autosys_jil_extract(environment_name, input_file_path, delimiter="|"):
     input_folder_path = os.path.dirname(input_file_path)
     output_file_name = "parsed_{}".format(input_file_name)
     output_file_path = os.path.join(input_folder_path, output_file_name)
-    with codecs.open(input_file_path,'rb', encoding='utf-8') as fin, codecs.open(output_file_path,'wb',
-                                                                                 encoding='utf-8') as fout:
+    with codecs.open(input_file_path, 'rb', encoding='utf-8') as fin, codecs.open(output_file_path, 'wb',
+                                                                                  encoding='utf-8') as fout:
         csvreader = csv.reader(fin, delimiter=":")
         csvwriter = csv.writer(fout, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL)
         csvwriter.writerow(['JobName', 'AttributeName', 'AttributeValue'])
@@ -180,10 +184,10 @@ def parse_autosys_jil_extract(environment_name, input_file_path, delimiter="|"):
                     attribute_value = "{}:{}".format(record[1].strip(), record[2].strip())
                     attribute_value = re.sub(r"{}_".format(environment_name), r'ENV_', attribute_value)
                     list_output_record.append(job_name)
-                    list_output.record.append(attribute_name)
-                    list_output.record.append(attribute_value)
+                    list_output_record.append(attribute_name)
+                    list_output_record.append(attribute_value)
 
-                if list_output_record != []:
+                if list_output_record is not list():
                     csvwriter.writerow(list_output_record)
     return output_file_path
 
@@ -255,6 +259,7 @@ def combine_files(input_folder_path, input_file_pattern, output_file_path, delim
             logger.debug("Merged: {}".format(input_file_path))
             os.remove(input_file_path)
 
+
 @timer
 def zip_file(input_file_path, keep_orig_file=True):
     """
@@ -311,7 +316,7 @@ def zip_multiple_files(list_input_file_paths, output_zip_file_path):
     if not os.path.exists(output_zip_folder_name):
         os.makedirs(output_zip_folder_name)
         for input_file_path in list_input_file_paths:
-            if os.path.isfile(intput_file_path):
+            if os.path.isfile(input_file_path):
                 shutil.copy(input_file_path, output_zip_folder_name)
 
         shutil.make_archive(output_zip_file_path, 'zip', output_zip_folder_name)
