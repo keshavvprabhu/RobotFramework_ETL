@@ -3,6 +3,7 @@ Library           OperatingSystem
 Library           DateTime
 Library           SSHLibrary
 Library           ../Scripts/python/FileConverters.py
+Library           String
 
 *** Keywords ***
 Create Important Directory Structures
@@ -58,3 +59,19 @@ Create File Comapre Config File
     OperatingSystem.File Should Exist    ${config_file_path}
     Set Global Variable    ${result_stats_file_path}
     [Return]    ${config_file_path}
+
+Write Command and Read Until Prompt
+    [Arguments]    ${linuxCommand}
+    SSHLibrary.Write    PS1="$ "
+    SSHLibrary.Write    ${linuxCommand}
+    ${output}    Read Until Prompt
+    ${output}    Format Linux Command Output    ${output}
+    ${output}    String.Strip String    ${output}
+
+Format Linux Command Output
+    [Arguments]    ${input_string}
+    ${input_string}    Convert to String    ${input_string}
+    ${length_input_string}    Get Length    ${input_string}
+    ${desired_length}    Evaluate    ${length_input_string}-2
+    ${output_string}    Get SubString    ${input_string}    0    ${desired_length}
+    [Return]    ${output_string}
