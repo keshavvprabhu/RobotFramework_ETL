@@ -2,6 +2,7 @@
 Library           OperatingSystem
 Library           DateTime
 Library           SSHLibrary
+Library           ../Scripts/python/FileConverters.py
 
 *** Keywords ***
 Create Important Directory Structures
