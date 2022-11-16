@@ -18,14 +18,14 @@ Setup Date Variables
 
 Linux Server Login
     [Arguments]    ${linux_host}    ${username}    ${password}
-    Log     ${linux_host}
+    Log    ${linux_host}
     SSHLibrary.OpenConnection    ${linux_host}    port=22
     SSHLibrary.Login    ${username}    ${password}
     Set Client Configuration    timeout=1000s
     ${linux_hostname}    SSHLibrary.Execute Command    hostname
     Log    ${linux_hostname}
 
-Create File Comapre Config File
+Create File Compare Config File
     [Arguments]    ${config_file_name}    ${database_file_path}    ${source_file_name}    ${source_file_delimiter}    ${target_file_name}    ${target_file_delimiter}    ${source_file_columns}    ${target_file_columns}    ${key_columns}    ${ignore_columns}    ${result_stats_file_name}    ${result_delimiter}    ${result_file_name}    ${limit_mismatch_count}    ${compare_file_headers}    ${test_environment}='NA'
     ...    ${test_name}='NA'
     [Documentation]    Creates File Compare Config File
