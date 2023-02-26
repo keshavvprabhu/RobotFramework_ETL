@@ -65,8 +65,7 @@ def parse_autosys_jil(input_file_path, delimiter="^"):
                     if attribute_name == 'condition':
                         # logger.info(attribute_name)
                         # logger.info("Befor Sorting Conditions: {attribute_value}")
-                        sorted_attribute_value = " & ".join(
-                            [sorted(i.strip()) for i in list(attribute_value.split("&")]))
+                        sorted_attribute_value = " & ".join(sorted([i.strip() for i in attribute_value.split("&")]))
                         # logger.info("After Sorting Conditions: {sorted_attribute_value}")
                         list_output_record.append(attribute_name)
                         list_output_record.append(sorted_attribute_value)
@@ -135,7 +134,7 @@ def create_autosys_status_report(input_file_path):
     output_file_path = os.path.abspath(output_file_path)
 
     logger.info(output_file_path)
-    with codecs.open(input_file_path, "rb", "utf-8") as fin, codecs.open(output_file_path, "wb", "utf-8") as fout
+    with codecs.open(input_file_path, "rb", "utf-8") as fin, codecs.open(output_file_path, "wb", "utf-8") as fout:
         csvreader = csv.reader(fout, delimiter="^", quoting=csv.QUOTE_MINIMAL)
         csvwriter = csv.writer(fout, delimiter="^", quoting=csv.QUOTE_MINIMAL)
 
@@ -219,7 +218,7 @@ def format_autosys_status_report(input_file_path, delimiter="^"):
 
     df['LastStart'] = pd.to_datetime(df['LastStart'], errors='coerce')
     df['LastEnd'] = pd.to_datetime(df['LastEnd'], errors='coerce')
-    df['JobStatus'] = df['JobStatus'].astype(category)
+    df['JobStatus'] = df['JobStatus'].astype('category')
 
     logger.info("=" * 50)
     logger.info("After Datatype Conversion")
