@@ -1,9 +1,11 @@
 # import section
 import codecs
 import os
-
+import pprint
+from base64 import urlsafe_b64encode as b64e
 import numpy as np
 import pandas as pd
+import requests
 from jira.client import JIRA
 
 
@@ -94,5 +96,18 @@ def append_summary_total(df_index, file_path, delimiter):
     df.to_csv(file_path, sep=delimiter)
 
 
+def connect_to_jira():
+    username = 'keshavvprabhu@gmail.com'
+    api_key = "ATATT3xFfGF0gBaQ1tlHZKoSSWaEmNTlmsIzF626WlL9BIsAAxJR7o35Cn-PWSa2dqRVmmwiShUCJQg1TvlMxuvrx1lbDBqvUYHWFxh8JR7Q3cDxPxrJFnIfIRO7ggko864aCE5rDyHfGTwbPQotnqQNT6gUpdw5jdtW96skqs_hmXiVdwVUQSo=16C6A424"
+    url = "https://phyurious.atlassian.net/rest/api/3/issue/ITEM-5"
+
+    string_to_encode = f"{username}:{api_key}"
+    encoded_value = b64e(bytearray(string_to_encode, encoding='utf-8'))
+    print(f"Token: {encoded_value}")
+    api_header = {'Authorization': 'Basic {}'.format(encoded_value)}
+    r  = requests.get(url, headers=api_header, verify=False)
+    pprint.pprint(r.json(), indent=4)
+
 if __name__ == '__main__':
+    connect_to_jira()
     pass
