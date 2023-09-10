@@ -296,13 +296,45 @@ def convert_csv_to_jil(input_file_path, delimiter, output_file_path):
 
             fout.write(f"/* -------------- {job_name} --------------*/\n")
 
-            #other attributes
+            # other attributes
             for key in list_keys:
                 if record.get(key, '') != '':
-                    fout.write(f"{key}: {record.get(key,'')}\n")
+                    fout.write(f"{key}: {record.get(key, '')}\n")
 
             fout.write("\n\n")
 
+
+@timer
+def find_and_replace_values_in_autosys_jil(input_file_path, config_file_path, output_file_path):
+    """
+    Reads autosys JIL file and config file and does a basic find and replace of values
+    Args:
+        input_file_path:
+        config_file_path:
+        output_file_path:
+
+    Returns:
+
+    """
+    with codecs.open(input_file_path, 'rb', encoding='utf-8') as fin, \
+            codecs.open(config_file_path, 'rb', encoding='utf-8') as fconf, \
+            codecs.open(output_file_path, 'w', encoding='utf-8') as fout:
+
+        csvreader =csv.reader(fconf, delimiter="|",quoting=csv.QUOTE_MINIMAL)
+        jil = fin.read()
+        # logger.info("Before")
+        # logger.info(jil)
+
+        for record in csvreader:
+            logger.info("Find Value: {}".format(record[0]))
+            logger.info("Replace Value: {}".format(record[1]))
+            find_value = record[0]
+            replace_value = record[1]
+            jil = jil.replace(find_value, replace_value)
+
+        fout.write(jil +"\n")
+
+    print("Completed")
 
 
 if __name__ == "__main__":
