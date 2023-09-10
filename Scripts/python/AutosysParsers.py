@@ -299,7 +299,7 @@ def convert_csv_to_jil(input_file_path, delimiter, output_file_path):
             #other attributes
             for key in list_keys:
                 if record.get(key, '') != '':
-                    four.write(f"{key}: {record.get(key,'')}\n")
+                    fout.write(f"{key}: {record.get(key,'')}\n")
 
             fout.write("\n\n")
 
