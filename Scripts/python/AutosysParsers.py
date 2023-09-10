@@ -207,14 +207,15 @@ def create_autosys_status_report(input_file_path):
     format_autosys_status_report(output_file_path, "^")
     return output_file_path
 
+
 @timer
 def format_autosys_status_report(input_file_path, delimiter="^"):
     input_file_path = os.path.abspath(input_file_path)
     df = pd.read_csv(input_file_path, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL)
-    logger.info("="*50)
+    logger.info("=" * 50)
     logger.info("Before Datatype Conversion")
     logger.info(df.info(memory_usage="deep"))
-    logger.info("="*50)
+    logger.info("=" * 50)
 
     df['LastStart'] = pd.to_datetime(df['LastStart'], errors='coerce')
     df['LastEnd'] = pd.to_datetime(df['LastEnd'], errors='coerce')
@@ -223,7 +224,7 @@ def format_autosys_status_report(input_file_path, delimiter="^"):
     logger.info("=" * 50)
     logger.info("After Datatype Conversion")
     logger.info(df.info(memory_usage="deep"))
-    logger.info("="*50)
+    logger.info("=" * 50)
 
     df['ElapsedTime'] = df['LastEnd'] - df['LastStart']
 
@@ -231,6 +232,78 @@ def format_autosys_status_report(input_file_path, delimiter="^"):
     logger.info("\n {}".format(df_job_status))
 
     df.to_csv(input_file_path, index=False, encoding="utf-8", delimiter="^", quoting=csv.QUOTE_MINIMAL)
+
+
+@timer
+def convert_csv_to_jil(input_file_path, delimiter, output_file_path):
+    """
+    Converts CSV fule to JIL
+    Args:
+        input_file_path:
+        delimiter:
+        output_file_path:
+
+    Returns:
+
+    """
+    input_file_path = os.path.abspath(input_file_path)
+    input_file_name = os.path.basename(input_file_path)
+    output_file_path = os.path.abspath(output_file_path)
+
+    with codecs.open(input_file_path, 'rb', encoding='utf-8') as fin, codecs.open(output_file_path, 'wb',
+                                                                                  encoding='utf-8') as fout:
+        csvreader = csv.DictReader(fin, quoting=csv.QUOTE_MINIMAL, delimiter=delimiter)
+
+        list_keys = ['box_name',
+                     'command',
+                     'machine',
+                     'owner',
+                     'permission',
+                     'date_conditions',
+                     'box_success',
+                     'run_calendar',
+                     'condition',
+                     'days_of_week',
+                     'start_mins',
+                     'exclude_calendar',
+                     'start_times',
+                     'description',
+                     'n_retrys',
+                     'std_out_file',
+                     'std_err_file',
+                     'max_run_alarm',
+                     'alarm_if_fail',
+                     'job_load',
+                     'priority',
+                     'max_exit_success',
+                     'profile',
+                     'alarm_if_terminated',
+                     'envvars',
+                     'timezone',
+                     'watch_file',
+                     'watch_file_recursive',
+                     'watch_file_type',
+                     'watch_no_change',
+                     'continuous',
+                     'watch_fule_change_type',
+                     'watch_interval',
+                     'status',
+                     ]
+        for i, record in enumerate(csvreader, start=1):
+            job_name = record['JobName']
+            job_type = record['job_type']
+            operation = record['operation']
+
+            fout.write(f"/* -------------- {job_name} --------------*/\n")
+
+            #other attributes
+            for key in list_keys:
+                if record.get(key, '') != '':
+                    four.write(f"{key}: {record.get(key,'')}\n")
+
+            fout.write("\n\n")
+
+
 
 if __name__ == "__main__":
     pass
