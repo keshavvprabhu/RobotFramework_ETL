@@ -4,6 +4,7 @@ import os
 import timeit
 import codecs
 from robot.api import logger
+from CommonUtilities import timer
 
 
 # Author Section
@@ -12,28 +13,6 @@ from robot.api import logger
 
 
 # Write your code here
-def timer(fn):
-    """
-    This is the timer decorator that can provide the elapsed time of each function passed as argument
-    Args:
-        fn:
-
-    Returns:
-
-    """
-
-    def inner(*args, **kwargs):
-        start_time = timeit.default_timer()
-        logger.info("Started: {}".format(fn.__name__))
-        to_execute = fn(*args, **kwargs)
-        end_time = timeit.default_timer()
-        execution_time = end_time - start_time
-        logger.info("Completed: {}".format(fn.__name__))
-        logger.info("{0} took {1}s to execute".format(fn.__name__, execution_time))
-        return to_execute
-
-    return inner
-
 
 @timer
 def send_email(str_to, str_cc, str_subject, str_body, list_attachments):
@@ -54,6 +33,8 @@ def send_email(str_to, str_cc, str_subject, str_body, list_attachments):
     mail.To = str_to
     mail.Cc = str_cc
     mail.Subject = str_subject
+
+    ## Note: If you need to insert images, please ensure that the html has img tags with the image
     mail.HTMLBody = """{}""".format(str_body)
 
     # To attache a file to the email (optional):
@@ -64,10 +45,12 @@ def send_email(str_to, str_cc, str_subject, str_body, list_attachments):
             if attachment != 'File Not Found':
                 try:
                     os.path.exists(attachment)
-                    mail.Attachments.Add(attachment)
+                    attached = mail.Attachments.Add(attachment)
+                    attached.PropertyAccessor.SetProperty("http://schemas.microsoft.com/mapi/proptag/0x3712001F",
+                                                          "MyId{0}".format(i))
                     logger.info("Added Attachment {}:{}".format(i, attachment))
                 except Exception as e:
-                    logger.error("File Not Foung: {}".format(attachment))
+                    logger.error("File Not Found: {}".format(attachment))
                     logger.error(e)
 
     mail.Send()
@@ -96,6 +79,19 @@ def test_email():
     str_body = "Hello, This is a test email"
     list_attachments = ''
     send_email(str_to, str_cc, str_subject, str_body, list_attachments)
+
+
+def send_email_image():
+    signatureimage = r'/path/to/image.png'
+    outlook = win32.Dispatch('outlook.application')
+    mail = outlook.CreateItem(0)
+    mail.To = "keshavvprabhu@gmail.com"
+    mail.Subject = "Test Sample"
+    attachment = mail.Attachments.Add(signatureimage)
+    attachment.PropertyAccessor.SetProperty("http://schemas.microsoft.com/mapi/proptag/0x3712001F", "MyId1")
+    mail.HTMLBody = "<html><body><img src=""cid:MyId1""></body></html>"
+    mail.Send()
+
 
 if __name__ == '__main__':
     test_email()
